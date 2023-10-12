@@ -29,7 +29,8 @@ export default function ColorPicker({ value, onChange, className, style }: Color
               <input
                 className="min-w-0 flex-1 text-xs text-muted-foreground focus-visible:outline-none"
                 value={Color(value).hex().toString()}
-                onChange={() => {}}
+                // onChange={() => {}}
+                onKeyDown={() => {}}
               />
             </>
           )

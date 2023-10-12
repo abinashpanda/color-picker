@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { useInteractivePosition } from '../_hooks/use-interactive-position'
 import { ColorValue } from '../_types/color'
 import Color from 'color'
@@ -13,33 +13,58 @@ function getXYValueFromSaturationAndLightness(saturation: number, lightness: num
   return { x, y }
 }
 
+function getXYValueFromHue(hue: number) {
+  // as hue is calculated using x * 360
+  return { x: hue / 360, y: 0 }
+}
+
 type ColorPaletteProps = {
   value: ColorValue
   onChange: (type: ColorValue) => void
 }
 
-export default function ColorPalette({ value, onChange }: ColorPaletteProps) {
-  const hslColor = Color(value.value).hsl()
+type ColorPaletteMethods = {
+  updateColor: (value: ColorValue) => void
+}
+
+const ColorPalette = forwardRef<ColorPaletteMethods, ColorPaletteProps>(({ value, onChange }, ref) => {
+  const propColor = Color(value.value)
 
   const slContainer = useRef<HTMLDivElement | null>(null)
-  const slPosition = useInteractivePosition(
+  const { position: slPosition, setPosition: setSlPosition } = useInteractivePosition(
     slContainer,
-    getXYValueFromSaturationAndLightness(hslColor.saturationl(), hslColor.lightness()),
+    getXYValueFromSaturationAndLightness(propColor.saturationl(), propColor.lightness()),
   )
 
   const hContainer = useRef<HTMLDivElement | null>(null)
-  const hPosition = useInteractivePosition(hContainer, { x: hslColor.hue() / 360, y: 0 })
+  const { position: hPosition, setPosition: setHPosition } = useInteractivePosition(
+    hContainer,
+    getXYValueFromHue(propColor.hue()),
+  )
 
   const oContainer = useRef<HTMLDivElement | null>(null)
-  const oPosition = useInteractivePosition(oContainer)
+  const { position: oPosition } = useInteractivePosition(oContainer)
 
-  const rgb = Color.hsl(hPosition.x * 360, slPosition.x * 100, (1 - slPosition.y) * (100 - 50 * slPosition.x)).rgb()
+  const stateColor = Color.hsl(
+    hPosition.x * 360,
+    slPosition.x * 100,
+    (1 - slPosition.y) * (100 - 50 * slPosition.x),
+  ).rgb()
+
   useEffect(
     function runOnChangeOnHexColorChange() {
-      onChange({ type: 'color', value: rgb.toString() })
+      onChange({ type: 'color', value: stateColor.toString() })
     },
-    [rgb, onChange],
+    [stateColor, onChange],
   )
+
+  useImperativeHandle(ref, () => ({
+    updateColor: (value) => {
+      const color = Color(value.value)
+      setSlPosition(getXYValueFromSaturationAndLightness(color.saturationl(), color.lightness()))
+      setHPosition(getXYValueFromHue(color.hue()))
+    },
+  }))
 
   return (
     <div className="w-[200px] space-y-2">
@@ -48,7 +73,7 @@ export default function ColorPalette({ value, onChange }: ColorPaletteProps) {
         className="relative aspect-square w-full select-none border"
         style={{
           backgroundImage: `linear-gradient(0deg,#000,transparent),linear-gradient(90deg,#fff,hsla(0,0%,100%,0))`,
-          backgroundColor: `hsl(${hPosition.x * 360}, 100%, 50%)`,
+          backgroundColor: `hsl(${stateColor.hue()}, 100%, 50%)`,
         }}
       >
         <div
@@ -63,7 +88,7 @@ export default function ColorPalette({ value, onChange }: ColorPaletteProps) {
           <div
             className="h-full w-full rounded-full border-2 border-white bg-current"
             style={{
-              color: rgb.toString(),
+              color: stateColor.toString(),
             }}
           />
         </div>
@@ -114,4 +139,7 @@ export default function ColorPalette({ value, onChange }: ColorPaletteProps) {
       </div>
     </div>
   )
-}
+})
+
+ColorPalette.displayName = 'ColorPalette'
+export default ColorPalette

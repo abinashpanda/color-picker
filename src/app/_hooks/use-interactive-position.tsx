@@ -65,5 +65,5 @@ export function useInteractivePosition<C extends HTMLElement>(
     [measurement],
   )
 
-  return position
+  return { position, setPosition }
 }
