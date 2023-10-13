@@ -7,7 +7,6 @@ import { PickerValue } from './_types/color'
 export default function Page() {
   const [color, setColor] = useState<PickerValue>({ type: 'color', color: '#ff0000', opacity: 100 })
   const handleChange = useCallback((value: PickerValue) => {
-    console.log('picker value change', value)
     setColor(value)
   }, [])
 

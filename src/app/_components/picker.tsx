@@ -15,6 +15,7 @@ import {
 } from '../_utils/color'
 import ColorPickerPreview from './color-picker-preview'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useEventCallback } from '../_hooks/use-event-callback'
 
 type Picker = {
   value: PickerValue
@@ -58,7 +59,7 @@ const PICKER_CONFIG = {
 const PICKER_TYPE_ORDER_LIST: PickerValue['type'][] = ['color', 'gradient', 'image']
 
 export default function Picker({ value, onChange, className, style }: Picker) {
-  const [activePickerType, setActivePickerType] = useSynctedState(value.type)
+  const [activePickerType, setActivePickerType] = useState(value.type)
 
   const [pickerData, setPickerData] = useState<PickerDataState>({
     color: value.type === 'color' ? value : createInitialColorValue('#ffffff'),
@@ -73,13 +74,14 @@ export default function Picker({ value, onChange, className, style }: Picker) {
     }))
   }, [])
 
+  const onChangeCallback = useEventCallback(onChange)
   useEffect(
     function callOnChangeOnPickerDataChange() {
       if (!isPickerValueEqual(value, pickerData[activePickerType])) {
-        onChange(pickerData[activePickerType])
+        onChangeCallback(pickerData[activePickerType])
       }
     },
-    [onChange, value, pickerData, activePickerType],
+    [value, pickerData, activePickerType],
   )
 
   return (

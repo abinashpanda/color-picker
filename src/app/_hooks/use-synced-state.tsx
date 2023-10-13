@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 /**
  * useSyncedState hook is used to sync a value with a state.

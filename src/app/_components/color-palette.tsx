@@ -5,6 +5,7 @@ import { useInteractivePosition } from '../_hooks/use-interactive-position'
 import { PickerValue } from '../_types/color'
 import Color from 'color'
 import invariant from 'tiny-invariant'
+import { useEventCallback } from '../_hooks/use-event-callback'
 
 function getXYFromSV(saturation: number, value: number) {
   const x = saturation / 100
@@ -56,11 +57,13 @@ const ColorPalette = forwardRef<ColorPaletteMethods, ColorPaletteProps>(({ value
   const stateColorString = stateColor.hex().toString()
   const opacity = Math.floor(oPosition.x * 100)
 
+  const onChangeCallback = useEventCallback(onChange)
+
   useEffect(
     function runOnChangeOnHexColorChange() {
-      onChange({ type: 'color', color: stateColorString, opacity })
+      onChangeCallback({ type: 'color', color: stateColorString, opacity })
     },
-    [onChange, stateColorString, opacity],
+    [stateColorString, opacity],
   )
 
   useImperativeHandle(
