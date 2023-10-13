@@ -1,17 +1,27 @@
 export type ColorValue = {
   type: 'color'
-  value: string
+  color: string
+  opacity: number
 }
+
+type GradientConfig =
+  | {
+      gradientType: 'linear'
+      angle: number
+    }
+  | {
+      gradientType: 'radial'
+    }
 
 export type GradientValue = {
   type: 'gradient'
-  gradientType: 'linear' | 'radial'
   stops: GradientStop[]
-}
+} & GradientConfig
 
 export type GradientStop = {
   position: number
   color: string
+  opacity: number
 }
 
 export type ImageValue = {
@@ -19,4 +29,4 @@ export type ImageValue = {
   url: string
 }
 
-export type Value = ColorValue | GradientValue | ImageValue
+export type PickerValue = ColorValue | GradientValue | ImageValue

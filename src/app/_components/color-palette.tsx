@@ -1,75 +1,89 @@
 'use client'
 
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { useInteractivePosition } from '../_hooks/use-interactive-position'
-import { ColorValue } from '../_types/color'
+import { PickerValue } from '../_types/color'
 import Color from 'color'
+import invariant from 'tiny-invariant'
 
-function getXYValueFromSaturationAndLightness(saturation: number, lightness: number) {
-  // as saturation is calculated using x * 100
+function getXYFromSV(saturation: number, value: number) {
   const x = saturation / 100
-  // as lightness is calcuated using (1 - slPosition.y) * (100 - 50 * slPosition.x)
-  const y = 1 - lightness / (100 - 50 * x)
+  const y = 1 - value / 100
   return { x, y }
 }
 
-function getXYValueFromHue(hue: number) {
-  // as hue is calculated using x * 360
+function getXYFromHue(hue: number) {
   return { x: hue / 360, y: 0 }
 }
 
-type ColorPaletteProps = {
-  value: ColorValue
-  onChange: (type: ColorValue) => void
+function getXYFromOpacity(opacity: number) {
+  return { x: opacity / 100, y: 0 }
 }
 
-type ColorPaletteMethods = {
-  updateColor: (value: ColorValue) => void
+export type ColorPaletteProps = {
+  value: PickerValue
+  onChange: (type: PickerValue) => void
+}
+
+export type ColorPaletteMethods = {
+  updateColor: (value: PickerValue) => void
 }
 
 const ColorPalette = forwardRef<ColorPaletteMethods, ColorPaletteProps>(({ value, onChange }, ref) => {
-  const propColor = Color(value.value)
+  invariant(value.type === 'color', 'ColorPalette only supports color type')
 
-  const slContainer = useRef<HTMLDivElement | null>(null)
-  const { position: slPosition, setPosition: setSlPosition } = useInteractivePosition(
-    slContainer,
-    getXYValueFromSaturationAndLightness(propColor.saturationl(), propColor.lightness()),
+  const propColor = Color(value.color)
+
+  const svContainer = useRef<HTMLDivElement | null>(null)
+  const { position: svPosition, setPosition: setSVPosition } = useInteractivePosition(
+    svContainer,
+    getXYFromSV(propColor.saturationv(), propColor.value()),
   )
 
   const hContainer = useRef<HTMLDivElement | null>(null)
   const { position: hPosition, setPosition: setHPosition } = useInteractivePosition(
     hContainer,
-    getXYValueFromHue(propColor.hue()),
+    getXYFromHue(propColor.hue()),
   )
 
   const oContainer = useRef<HTMLDivElement | null>(null)
-  const { position: oPosition } = useInteractivePosition(oContainer)
+  const { position: oPosition, setPosition: setOPosition } = useInteractivePosition(
+    oContainer,
+    getXYFromOpacity(value.opacity),
+  )
 
-  const stateColor = Color.hsl(
-    hPosition.x * 360,
-    slPosition.x * 100,
-    (1 - slPosition.y) * (100 - 50 * slPosition.x),
-  ).rgb()
+  const stateColor = Color.hsv(hPosition.x * 360, svPosition.x * 100, (1 - svPosition.y) * 100)
+  const stateColorString = stateColor.hex().toString()
+  const opacity = Math.floor(oPosition.x * 100)
 
   useEffect(
     function runOnChangeOnHexColorChange() {
-      onChange({ type: 'color', value: stateColor.toString() })
+      onChange({ type: 'color', color: stateColorString, opacity })
     },
-    [stateColor, onChange],
+    [onChange, stateColorString, opacity],
   )
 
-  useImperativeHandle(ref, () => ({
-    updateColor: (value) => {
-      const color = Color(value.value)
-      setSlPosition(getXYValueFromSaturationAndLightness(color.saturationl(), color.lightness()))
-      setHPosition(getXYValueFromHue(color.hue()))
-    },
-  }))
+  useImperativeHandle(
+    ref,
+    () => ({
+      updateColor: (value) => {
+        if (value.type !== 'color') {
+          return
+        }
+
+        const color = Color(value.color)
+        setSVPosition(getXYFromSV(color.saturationv(), color.value()))
+        setHPosition(getXYFromHue(color.hue()))
+        setOPosition(getXYFromOpacity(value.opacity))
+      },
+    }),
+    [],
+  )
 
   return (
     <div className="w-[200px] space-y-2">
       <div
-        ref={slContainer}
+        ref={svContainer}
         className="relative aspect-square w-full select-none border"
         style={{
           backgroundImage: `linear-gradient(0deg,#000,transparent),linear-gradient(90deg,#fff,hsla(0,0%,100%,0))`,
@@ -80,15 +94,15 @@ const ColorPalette = forwardRef<ColorPaletteMethods, ColorPaletteProps>(({ value
           className="absolute left-[var(--left)] top-[var(--top)] h-4 w-4 -translate-x-1/2 -translate-y-1/2 transform select-none rounded-full border"
           style={
             {
-              '--left': `${slPosition.x * 100}%`,
-              '--top': `${slPosition.y * 100}%`,
+              '--left': `${svPosition.x * 100}%`,
+              '--top': `${svPosition.y * 100}%`,
             } as React.CSSProperties
           }
         >
           <div
             className="h-full w-full rounded-full border-2 border-white bg-current"
             style={{
-              color: stateColor.toString(),
+              color: stateColor.hex().toString(),
             }}
           />
         </div>
@@ -125,7 +139,7 @@ const ColorPalette = forwardRef<ColorPaletteMethods, ColorPaletteProps>(({ value
         ref={oContainer}
       >
         <div
-          className="absolute inset-0 h-full w-full select-none select-none border border-border/50"
+          className="absolute inset-0 h-full w-full select-none border border-border/50"
           style={{ background: 'linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%)' }}
         />
         <div
