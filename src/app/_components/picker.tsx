@@ -5,7 +5,7 @@ import { P, match } from 'ts-pattern'
 import { ImageIcon } from 'lucide-react'
 import { ColorValue, GradientValue, ImageValue, PickerValue } from '../_types/color'
 import ColorPickerPopover from './color-picker-popover'
-import { cloneElement, useCallback, useEffect, useState } from 'react'
+import { cloneElement, createElement, useCallback, useEffect, useState } from 'react'
 import { useSynctedState } from '../_hooks/use-synced-state'
 import {
   createInitialColorValue,
@@ -16,6 +16,8 @@ import {
 import ColorPickerPreview from './color-picker-preview'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useEventCallback } from '../_hooks/use-event-callback'
+import GradientPickerPreview from './gradient-picker-preview'
+import GradientPickerPopover from './gradient-picker-popover'
 
 type Picker = {
   value: PickerValue
@@ -39,8 +41,8 @@ const PICKER_CONFIG = {
   },
   gradient: {
     icon: <div className="to-current/0 bg-gradient-to-b from-current" />,
-    previewComponent: ColorPickerPreview,
-    popoverComponent: ColorPickerPopover,
+    previewComponent: GradientPickerPreview,
+    popoverComponent: GradientPickerPopover,
   },
   image: {
     icon: <ImageIcon />,
@@ -91,12 +93,7 @@ export default function Picker({ value, onChange, className, style }: Picker) {
           className={cn('w-full rounded border p-1 focus-within:ring-1 focus-within:ring-ring', className)}
           style={style}
         >
-          {match(activePickerType)
-            .with('color', () => {
-              return <PICKER_CONFIG.color.previewComponent value={pickerData.color} />
-            })
-            .with(P._, () => null)
-            .exhaustive()}
+          {createElement(PICKER_CONFIG[activePickerType].previewComponent, { value: pickerData[activePickerType] })}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto">
@@ -122,12 +119,10 @@ export default function Picker({ value, onChange, className, style }: Picker) {
             )
           })}
         </div>
-        {match(activePickerType)
-          .with('color', () => {
-            return <PICKER_CONFIG.color.popoverComponent value={pickerData.color} onChange={handleOnChange} />
-          })
-          .with(P._, () => null)
-          .exhaustive()}
+        {createElement(PICKER_CONFIG[activePickerType].popoverComponent, {
+          value: pickerData[activePickerType],
+          onChange: handleOnChange,
+        })}
       </PopoverContent>
     </Popover>
   )

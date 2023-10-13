@@ -134,7 +134,7 @@ const ColorPalette = forwardRef<ColorPaletteMethods, ColorPaletteProps>(({ value
         </div>
       </div>
       <div
-        className="relative h-3 w-full select-none"
+        className="relative h-3 w-full select-none border border-border/50"
         style={{
           background:
             'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAADFJREFUOE9jZGBgEGHAD97gk2YcNYBhmIQBgWSAP52AwoAQwJvQRg1gACckQoC2gQgAIF8IscwEtKYAAAAASUVORK5CYII=") left center',
@@ -142,7 +142,7 @@ const ColorPalette = forwardRef<ColorPaletteMethods, ColorPaletteProps>(({ value
         ref={oContainer}
       >
         <div
-          className="absolute inset-0 h-full w-full select-none border border-border/50"
+          className="absolute inset-0 h-full w-full select-none"
           style={{ background: 'linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%)' }}
         />
         <div

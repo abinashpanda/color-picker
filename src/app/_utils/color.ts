@@ -1,5 +1,6 @@
 import Color from 'color'
 import { ColorValue, GradientValue, ImageValue, PickerValue } from '../_types/color'
+import { match } from 'ts-pattern'
 
 export function createInitialColorValue(value?: string): ColorValue {
   return {
@@ -15,7 +16,7 @@ export function createInitialGradientValue(value?: string): GradientValue {
   return {
     type: 'gradient',
     gradientType: 'linear',
-    angle: 0,
+    angle: 180,
     stops: [
       {
         position: 0,
@@ -55,4 +56,22 @@ export function isPickerValueEqual(a: PickerValue, b: PickerValue) {
   }
 
   return false
+}
+
+export function createGradientStringFromValue(value: GradientValue) {
+  return match(value)
+    .returnType<string>()
+    .with({ gradientType: 'linear' }, (value) => {
+      return `linear-gradient(${value.angle}deg, ${value.stops
+        .map(
+          (stop) =>
+            `${Color(stop.color)
+              .alpha(stop.opacity / 100)
+              .rgb()
+              .toString()}`,
+        )
+        .join(', ')})`
+    })
+    .with({ gradientType: 'radial' }, () => '')
+    .exhaustive()
 }
