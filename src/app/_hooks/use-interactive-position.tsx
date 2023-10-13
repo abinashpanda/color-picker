@@ -44,7 +44,6 @@ export function useInteractivePosition<C extends HTMLElement>(
       }
 
       function handleMouseMove(event: MouseEvent) {
-        const target = event.target as HTMLDivElement
         if (isDragging.current) {
           calculatePosition(event)
         }

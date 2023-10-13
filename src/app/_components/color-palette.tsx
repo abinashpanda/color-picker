@@ -146,7 +146,7 @@ const ColorPalette = forwardRef<ColorPaletteMethods, ColorPaletteProps>(({ value
           style={{ background: 'linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgb(255, 255, 255) 100%)' }}
         />
         <div
-          className="absolute left-[var(--left)] top-1/2 aspect-square h-[calc(100%+4px)] -translate-x-1/2 -translate-y-1/2 transform select-none rounded-full border bg-white shadow-lg"
+          className="absolute left-[var(--left)] top-1/2 aspect-square h-[calc(100%+4px)] -translate-x-1/2 -translate-y-1/2 transform select-none rounded-full border bg-background shadow-lg"
           style={
             {
               '--left': `${oPosition.x * 100}%`,

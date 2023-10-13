@@ -21,18 +21,21 @@ export default function ColorPreview({ value, className, style }: ColorPreviewPr
         }}
       />
       <div
-        className="flex-1"
+        className="relative flex-1"
         style={{
-          backgroundImage:
-            'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAADFJREFUOE9jZGBgEGHAD97gk2YcNYBhmIQBgWSAP52AwoAQwJvQRg1gACckQoC2gQgAIF8IscwEtKYAAAAASUVORK5CYII=")',
-          backgroundPosition: 'left center',
+          background:
+            'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAADFJREFUOE9jZGBgEGHAD97gk2YcNYBhmIQBgWSAP52AwoAQwJvQRg1gACckQoC2gQgAIF8IscwEtKYAAAAASUVORK5CYII=") left center',
           backgroundSize: '50%',
-          backgroundColor: Color(value.color)
-            .alpha(value.opacity / 100)
-            .rgb()
-            .toString(),
         }}
-      />
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background: value.color,
+            opacity: value.opacity / 100,
+          }}
+        />
+      </div>
     </div>
   )
 }
